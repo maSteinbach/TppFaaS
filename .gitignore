@@ -1,0 +1,7 @@
+.vscode
+package-lock.json
+node_modules
+.serverless
+__pycache__
+.ipynb*
+.DS_Store

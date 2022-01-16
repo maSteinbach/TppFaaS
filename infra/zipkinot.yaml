@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: zipkinot
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: zipkinot
+  template:
+    metadata:
+      labels:
+        app: zipkinot
+    spec:
+      containers:
+        - name: zipkin
+          image: openzipkin/zipkin
+          env:
+            # note: in-memory storage holds all data in memory, purging older data upon a span limit.
+            - name: STORAGE_TYPE
+              value: mem
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    name: zipkinot
+  name: zipkinot
+spec:
+  type: NodePort
+  selector:
+    app: zipkinot
+  ports:
+    - port: 9411
+      targetPort: 9411
+      nodePort: 31010

@@ -1,0 +1,83 @@
+service: sequence # Must have the same name as the parent directory.
+
+provider:
+  name: openwhisk
+  ignore_certs: true
+
+functions:
+  main:
+    handler: ../funcs.main
+    parameters:
+      owHost: ${file(../config.yaml):openwhisk.host}
+      owAuth: ${file(../config.yaml):openwhisk.auth}
+      appName: ${self:service}
+      collectorHost: ${file(../config.yaml):otelcollector.host}
+      functionGraph: ${file(../graph_sequence.yaml)}
+  f1:
+    handler: ../funcs.f
+    parameters:
+      duration: 300
+      alpha: 30
+      beta: 0.1
+  f2:
+    handler: ../funcs.f
+    parameters:
+      duration: 400
+      alpha: 30
+      beta: 0.075
+  f3:
+    handler: ../funcs.f
+    parameters:
+      duration: 500
+      alpha: 30
+      beta: 0.06
+  f4:
+    handler: ../funcs.f
+    parameters:
+      duration: 300
+      alpha: 30
+      beta: 0.1
+  f5:
+    handler: ../funcs.f
+    parameters:
+      duration: 400
+      alpha: 30
+      beta: 0.075 
+  f6:
+    handler: ../funcs.f
+    parameters:
+      duration: 500
+      alpha: 30
+      beta: 0.06
+  f7:
+    handler: ../funcs.f
+    parameters:
+      duration: 300
+      alpha: 30
+      beta: 0.1
+  f8:
+    handler: ../funcs.f
+    parameters:
+      duration: 400
+      alpha: 30
+      beta: 0.075
+  f9:
+    handler: ../funcs.f
+    parameters:
+      duration: 500
+      alpha: 30
+      beta: 0.06
+  f10:
+    handler: ../funcs.f
+    parameters:
+      duration: 300
+      alpha: 30
+      beta: 0.1
+
+plugins:
+  - serverless-openwhisk
+
+package:
+  include:
+    - ../funcs.js
+    - ../tracing.js

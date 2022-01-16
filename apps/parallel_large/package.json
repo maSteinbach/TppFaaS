@@ -1,0 +1,12 @@
+{
+  "version": "1.0.0",
+  "devDependencies": {
+    "serverless-openwhisk": ">=0.13.0"
+  },
+  "dependencies": {
+    "@opentelemetry/api": "0.18.1",
+    "@opentelemetry/exporter-collector": "0.18.0",
+    "@opentelemetry/tracing": "0.18.0",
+    "probability-distributions": "0.9.1"
+  }
+}

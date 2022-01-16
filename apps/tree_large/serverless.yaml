@@ -1,0 +1,149 @@
+service: tree_large # Must have the same name as the parent directory.
+
+provider:
+  name: openwhisk
+  ignore_certs: true
+
+functions:
+  main:
+    handler: ../funcs.main
+    parameters:
+      owHost: ${file(../config.yaml):openwhisk.host}
+      owAuth: ${file(../config.yaml):openwhisk.auth}
+      appName: ${self:service}
+      collectorHost: ${file(../config.yaml):otelcollector.host}
+      functionGraph: ${file(../graph_tree_large.yaml)}
+  f11:
+    handler: ../funcs.f
+    parameters:
+      duration: 300
+      alpha: 30
+      beta: 0.1
+  f12:
+    handler: ../funcs.f
+    parameters:
+      duration: 400
+      alpha: 30
+      beta: 0.075
+  f13:
+    handler: ../funcs.f
+    parameters:
+      duration: 500
+      alpha: 30
+      beta: 0.06
+  f21:
+    handler: ../funcs.f
+    parameters:
+      duration: 500
+      alpha: 30
+      beta: 0.06
+  f22:
+    handler: ../funcs.f
+    parameters:
+      duration: 400
+      alpha: 30
+      beta: 0.075
+  f23:
+    handler: ../funcs.f
+    parameters:
+      duration: 300
+      alpha: 30
+      beta: 0.1
+  f24:
+    handler: ../funcs.f
+    parameters:
+      duration: 500
+      alpha: 30
+      beta: 0.06
+  f25:
+    handler: ../funcs.f
+    parameters:
+      duration: 400
+      alpha: 30
+      beta: 0.075
+  f26:
+    handler: ../funcs.f
+    parameters:
+      duration: 300
+      alpha: 30
+      beta: 0.1
+  f31:
+    handler: ../funcs.f
+    parameters:
+      duration: 0
+      alpha: 1
+      beta: 1
+  f32:
+    handler: ../funcs.f
+    parameters:
+      duration: 0
+      alpha: 1
+      beta: 1
+  f33:
+    handler: ../funcs.f
+    parameters:
+      duration: 0
+      alpha: 1
+      beta: 1   
+  f34:
+    handler: ../funcs.f
+    parameters:
+      duration: 0
+      alpha: 1
+      beta: 1
+  f35:
+    handler: ../funcs.f
+    parameters:
+      duration: 0
+      alpha: 1
+      beta: 1
+  f36:
+    handler: ../funcs.f
+    parameters:
+      duration: 0
+      alpha: 1
+      beta: 1
+  f37:
+    handler: ../funcs.f
+    parameters:
+      duration: 0
+      alpha: 1
+      beta: 1
+  f38:
+    handler: ../funcs.f
+    parameters:
+      duration: 0
+      alpha: 1
+      beta: 1
+  f39:
+    handler: ../funcs.f
+    parameters:
+      duration: 0
+      alpha: 1
+      beta: 1
+  f310:
+    handler: ../funcs.f
+    parameters:
+      duration: 0
+      alpha: 1
+      beta: 1
+  f311:
+    handler: ../funcs.f
+    parameters:
+      duration: 0
+      alpha: 1
+      beta: 1
+  f312:
+    handler: ../funcs.f
+    parameters:
+      duration: 0
+      alpha: 1
+      beta: 1
+      
+plugins:
+  - serverless-openwhisk
+
+package:
+  include:
+    - ../funcs.js
+    - ../tracing.js

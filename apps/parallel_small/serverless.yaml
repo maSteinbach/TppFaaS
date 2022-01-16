@@ -1,0 +1,83 @@
+service: parallel_small # Must have the same name as the parent directory.
+
+provider:
+  name: openwhisk
+  ignore_certs: true
+
+functions:
+  main:
+    handler: ../funcs.main
+    parameters:
+      owHost: ${file(../config.yaml):openwhisk.host}
+      owAuth: ${file(../config.yaml):openwhisk.auth}
+      appName: ${self:service}
+      collectorHost: ${file(../config.yaml):otelcollector.host}
+      functionGraph: ${file(../graph_parallel_small.yaml)}
+  f11:
+    handler: ../funcs.f
+    parameters:
+      duration: 300
+      alpha: 30
+      beta: 0.1
+  f12:
+    handler: ../funcs.f
+    parameters:
+      duration: 500
+      alpha: 30
+      beta: 0.06
+  f21:
+    handler: ../funcs.f
+    parameters:
+      duration: 400
+      alpha: 30
+      beta: 0.075
+  f22:
+    handler: ../funcs.f
+    parameters:
+      duration: 400
+      alpha: 30
+      beta: 0.075
+  f31:
+    handler: ../funcs.f
+    parameters:
+      duration: 500
+      alpha: 30
+      beta: 0.06 
+  f32:
+    handler: ../funcs.f
+    parameters:
+      duration: 300
+      alpha: 30
+      beta: 0.1  
+  f41:
+    handler: ../funcs.f
+    parameters:
+      duration: 300
+      alpha: 30
+      beta: 0.1  
+  f42:
+    handler: ../funcs.f
+    parameters:
+      duration: 500
+      alpha: 30
+      beta: 0.06  
+  f51:
+    handler: ../funcs.f
+    parameters:
+      duration: 300
+      alpha: 30
+      beta: 0.1
+  f52:
+    handler: ../funcs.f
+    parameters:
+      duration: 300
+      alpha: 30
+      beta: 0.1
+      
+plugins:
+  - serverless-openwhisk
+
+package:
+  include:
+    - ../funcs.js
+    - ../tracing.js
