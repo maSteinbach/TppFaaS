@@ -2,7 +2,6 @@ import json
 import logging
 import random
 import requests
-import sys
 import time
 import urllib3
 import yaml
@@ -11,10 +10,8 @@ from itertools import product
 logger = logging.getLogger("sampler.runrequests")
 
 class Requester:
-    def __init__(self, app: str, n1: int, n2: int):
+    def __init__(self, app: str):
         self._app = app
-        self._n1 = n1
-        self._n2 = n2
         self._unfetched_traces = []
         self._cfg = yaml.full_load(open("./config.yaml"))
         self._slscfg = yaml.full_load(open(f"../apps/{self._app}/serverless.yaml"))
@@ -54,8 +51,6 @@ class Requester:
     def _trace_complete(self, trace, numb_missing_function_anomalies) -> bool:
             # Get the function names of the Serverless application.
             func_names = set(self._slscfg["functions"])
-            if "conductor" in func_names:
-                func_names.remove("conductor")
             # Check if each function name has a respective span in the trace.
             span_names = set(map(lambda span: span["name"], trace))
             f = lambda func_span_name: func_span_name[0] == func_span_name[1][-len(func_span_name[0]):]
@@ -66,13 +61,14 @@ class Requester:
 
     def run_requests(
         self,
-        first_lower_bound,
-        first_upper_bound,
-        second_lower_bound,
-        second_upper_bound,
-        numb_execution_anomalies,
-        numb_missing_function_anomalies,
-        random_execution_duration
+        n: int,
+        lower_bound: float,
+        upper_bound: float,
+        batch_size: int,
+        pause_duration: int,
+        numb_execution_anomalies: int,
+        numb_missing_function_anomalies: int,
+        random_execution_duration: bool
     ) -> list:
         APIHOST = f"https://{self._cfg['openwhisk']['host']}"
         AUTH_KEY = self._cfg['openwhisk']['auth']
@@ -87,7 +83,7 @@ class Requester:
         sample_id = int(time.time() * 1e3)
 
         count = 0
-        while count < (self._n1 + self._n2):
+        while count < n:
             missing_function_anomalies = self._sample_missing_function_anomalies(numb_missing_function_anomalies)
             execution_anomalies = self._sample_execution_anomalies(numb_execution_anomalies, missing_function_anomalies)
             data = json.dumps({
@@ -112,16 +108,14 @@ class Requester:
                 continue
            
             count += 1
-            logger.info(f"{count} of {self._n1 + self._n2} requests performed {response.text}.")
+            logger.info(f"{count} of {n} requests performed {response.text}.")
             
             dur = 0
-            log_str = ""
-            if count % 50 == 0:
-                dur = 120
+            if batch_size and count % batch_size == 0:
+                dur = pause_duration
             else:
-                dur = random.uniform(second_lower_bound, second_upper_bound)
-                log_str = f" Lower-bound={second_lower_bound}, upper-bound={second_upper_bound}."    
-            logger.info(f"Wait {round(dur, 2)} seconds until next request.{log_str}")
+                dur = random.uniform(lower_bound, upper_bound)
+            logger.info(f"Wait {round(dur, 2)} seconds until next request.")
             time.sleep(dur)
 
             self._unfetched_traces.append(response.json()["activationId"])

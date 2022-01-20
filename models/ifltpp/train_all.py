@@ -34,7 +34,7 @@ class ResultItem:
         return mean(self.final_loss_val)
 
 def feature_combinations(filename: str) -> List[tuple]:
-    if "_n2_" in filename:
+    if "_b_" in filename:
         return [False, True] # High load dataset.
     else:
         return [False] # Low load dataset.

@@ -13,12 +13,11 @@ yaml() {
 }
 
 dflag=''
-n1flag=''
-l1flag=''
-u1flag=''
-n2flag=0
-l2flag=-1
-u2flag=-1
+nflag=''
+lflag=''
+uflag=''
+bflag=''
+wflag=''
 rflag=0
 eflag=0
 mflag=0
@@ -29,28 +28,24 @@ while :; do
         dflag=$2
         shift
         ;;
-    -n1)
-        n1flag=$2
+    -n)
+        nflag=$2
         shift
         ;;
-    -l1)
-        l1flag=$2
+    -l)
+        lflag=$2
         shift
         ;;
-    -u1)
-        u1flag=$2
+    -u)
+        uflag=$2
         shift
         ;;
-    -n2)
-        n2flag=$2
+    -b)
+        bflag=$2
         shift
         ;;
-    -l2)
-        l2flag=$2
-        shift
-        ;;
-    -u2)
-        u2flag=$2
+    -w)
+        wflag=$2
         shift
         ;;
     -r)
@@ -74,18 +69,37 @@ while :; do
   shift
 done
 echo "d: ${dflag}"
-echo "n1: ${n1flag}"
-echo "l1: ${l1flag}"
-echo "u1: ${u1flag}"
-echo "n2: ${n2flag}"
-echo "l2: ${l2flag}"
-echo "u2: ${u2flag}"
+echo "n: ${nflag}"
+echo "l: ${lflag}"
+echo "u: ${uflag}"
+if (( $#bflag > 0 && $#wflag > 0 )); then
+    echo "b: ${bflag}"
+    echo "w: ${wflag}"
+fi
 echo "r: ${rflag}"
-echo "e: ${eflag}"
-echo "m: ${mflag}"
-# Check if all arguments are given.
-if (( "${#dflag}" <= 0 || "${#n1flag}" <= 0 || "${#l1flag}" <= 0 || "${#u1flag}" <= 0 )); then
-    err "App directory name (flag: -d), number of traces (flag: -n1), lower bound (flag: -l1), or upper bound (flag: -u1) is missing."
+if (( $eflag > 0 && $mflag > 0 )); then
+    echo "e: ${eflag}"
+    echo "m: ${mflag}"
+fi
+# Check if all arguments are given and valid.
+if (( "${#dflag}" <= 0 || "${#nflag}" <= 0 || "${#lflag}" <= 0 || "${#uflag}" <= 0 )); then
+    err "App directory name (flag: -d), number of traces (flag: -n), lower bound (flag: -l), or upper bound (flag: -u) is missing."
+    exit 1
+fi
+if (( $lflag > $uflag )); then
+    err "Lower bound is larger than upper bound."
+    exit 1
+fi
+if (( ($#bflag == 0 && $#wflag != 0) || ($#bflag != 0 && $#wflag == 0) )); then
+    err "Either batch size (flag: -b) or pause duration (flag: -w) argument is missing."
+    exit 1
+fi
+if (( $bflag <= 0 || $wflag <= 0 )); then
+    err "Batch size (flag: -b) and pause duration (flag: -w) must be larger than 0."
+    exit 1
+fi
+if (( $eflag < 0 || $mflag < 0 )); then
+    err "Anomalie flags -e and -m must be non-negative."
     exit 1
 fi
 # Check if valid Serverless app directory.
@@ -129,7 +143,7 @@ if ! serverless deploy; then
 fi
 # Send n requests to Serverless app.
 cd ../../sampler
-if ! python run.py -d "${dflag}" -n1 "${n1flag}" -l1 "${l1flag}" -u1 "${u1flag}" -n2 "${n2flag}" -l2 "${l2flag}" -u2 "${u2flag}" -m "${mflag}" -e "${eflag}" -r "${rflag}"; then
+if ! python run.py -d "${dflag}" -n "${nflag}" -l "${lflag}" -u "${uflag}" -b "${bflag}" -w "${wflag}" -m "${mflag}" -e "${eflag}" -r "${rflag}"; then
     err "Unable to run requests."
     exit 1
 fi

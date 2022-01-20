@@ -23,12 +23,12 @@ def get_filename_pairs(high_load_dir: str, low_load_dir: str) -> dict:
 
     files = Path(high_load_dir).glob('*.pkl')
     for f in files:
-        assert "_n2_" in str(f)
+        assert "_b_" in str(f)
         high_load_file_names.append(str(f))
 
     files = Path(low_load_dir).glob('*.pkl')
     for f in files:
-        assert "_n2_" not in str(f)
+        assert "_b_" not in str(f)
         low_load_file_names.append(str(f))
 
     assert len(high_load_file_names) > 0
@@ -42,9 +42,6 @@ def get_filename_pairs(high_load_dir: str, low_load_dir: str) -> dict:
         for ll_file in low_load_file_names:
             ll_app = get_app_name(ll_file)
             if hl_app == ll_app and is_random(hl_file) == is_random(ll_file):
-                if get_parameter(hl_file, "n1") != 0:
-                    assert get_parameter(hl_file, "l1") == get_parameter(ll_file, "l1")
-                    assert get_parameter(hl_file, "u1") == get_parameter(ll_file, "u1")
                 assert hl_file not in pairs
                 pairs[hl_file] = ll_file
 
