@@ -1,11 +1,14 @@
 #!/bin/bash
 
-SHELL_NAME="zsh"
+readonly SHELL_NAME="zsh"
+readonly INSTALL_TEX=1 # For matplotlib visualizations.
 
-brew install --cask mactex-no-gui
+if (( $INSTALL_TEX )); then
+    brew install texlive
+fi
 brew install --cask anaconda
 conda create --name tppfaas python=3.9
 conda init $SHELL_NAME
-exec zsh
+exec $SHELL_NAME
 conda activate tppfaas
 pip install -r requirements.txt
