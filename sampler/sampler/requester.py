@@ -93,6 +93,7 @@ class Requester:
                 "random": random_execution_duration
             })
             try:
+                """
                 response = requests.post(
                                 url, 
                                 params={"blocking": BLOCKING, "result": RESULT}, 
@@ -102,13 +103,16 @@ class Requester:
                                 headers=headers
                            )
                 response.raise_for_status()
+                """
+                pass
             except requests.exceptions.RequestException as e:
                 logger.error(f"Unable to perform request to {url}. {e}")
                 time.sleep(30)
                 continue
            
             count += 1
-            logger.info(f"{count} of {n} requests performed {response.text}.")
+            #logger.info(f"{count} of {n} requests performed {response.text}.")
+            logger.info(f"{count} of {n} requests performed.")
             
             dur = 0
             if batch_size and count % batch_size == 0:
@@ -118,11 +122,12 @@ class Requester:
             logger.info(f"Wait {round(dur, 2)} seconds until next request.")
             time.sleep(dur)
 
-            self._unfetched_traces.append(response.json()["activationId"])
+            #self._unfetched_traces.append(response.json()["activationId"])
         
         # Fetch complete traces from Zipkin one by one
         logger.info(f"Trying to fetch the traces from Zipkin ...")    
         traces = []
+        """
         impatient = 0
         while impatient <= self._patience:
             last_num_unfetched_traces = len(self._unfetched_traces)
@@ -142,5 +147,6 @@ class Requester:
             time.sleep(60)
         else:
             logger.info("Termination as the number of unfetched traces stagnated after multiple retries.")
+        """
         logger.info(f"Fetched {len(traces)} traces from Zipkin.")
         return traces

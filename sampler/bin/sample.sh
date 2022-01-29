@@ -115,21 +115,21 @@ if [[ ! ( -e "serverless.yaml" ) ]]; then
     exit 1
 fi
 # Check if Serverless CLI is installed.
-if ! command -v serverless &> /dev/null; then
-    err "Serverless Framework CLI is not installed (https://www.serverless.com/)."
-    exit 1
-fi
+#if ! command -v serverless &> /dev/null; then
+#    err "Serverless Framework CLI is not installed (https://www.serverless.com/)."
+#    exit 1
+#fi
 # Check if app dependencies are installed and install if necessary.
-if ! command -v npm &> /dev/null; then
-    err "npm is not installed (https://nodejs.org/en/)."
-    exit 1
-fi
+#if ! command -v npm &> /dev/null; then
+#    err "npm is not installed (https://nodejs.org/en/)."
+#    exit 1
+#fi
 #if ! npm ls --silent &> /dev/null; then 
 #    echo "Dependencies in ${APP_DIR} not found. Installing ..."
-if ! npm install; then
-    echo "Unable to install dependencies in ${APP_DIR}."
-    exit 1
-fi
+#if ! npm install; then
+#    echo "Unable to install dependencies in ${APP_DIR}."
+#    exit 1
+#fi
 #fi
 # Read OpenWhisk config and set respective environment variables.
 cd ../../sampler
@@ -137,10 +137,10 @@ export OW_APIHOST="$(yaml config.yaml "['openwhisk']['host']")"
 export OW_AUTH="$(yaml config.yaml "['openwhisk']['auth']")"
 # Deploy app.
 cd "${APP_DIR}"
-if ! serverless deploy; then
-    err "Unable to deploy app."
-    exit 1
-fi
+#if ! serverless deploy; then
+#    err "Unable to deploy app."
+#    exit 1
+#fi
 # Send n requests to Serverless app.
 cd ../../sampler
 if ! python run.py -d "${dflag}" -n "${nflag}" -l "${lflag}" -u "${uflag}" -b "${bflag}" -w "${wflag}" -m "${mflag}" -e "${eflag}" -r "${rflag}"; then
@@ -148,8 +148,8 @@ if ! python run.py -d "${dflag}" -n "${nflag}" -l "${lflag}" -u "${uflag}" -b "$
     exit 1
 fi
 cd "${APP_DIR}"
-if ! serverless remove; then
-    err "Unable to remove app."
-    exit 1
-fi
+#if ! serverless remove; then
+#    err "Unable to remove app."
+#    exit 1
+#fi
 echo "Success!"

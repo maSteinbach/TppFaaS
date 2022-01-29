@@ -38,7 +38,8 @@ if __name__=="__main__":
         args.numb_missing_function_anomalies,
         args.random_execution_duration
     )
-    dataset = create_dataset(traces, mapping=_func_name_mapping(args.d))
+    #dataset = create_dataset(traces, mapping=_func_name_mapping(args.d))
+    dataset = ["test"]
     datetimestr = datetime.now().strftime("%Y%m%d_%H:%M")
     
     b_str = ""
