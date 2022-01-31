@@ -4,20 +4,28 @@ err() {
   echo "Error: $*" >&2
 }
 
-float_le_op() {
+float_le() {
     echo "$(echo "$1 <= $2" | bc)"
+}
+
+float_less() {
+    echo "$(echo "$1 < $2" | bc)"
+}
+
+float_larger() {
+    echo "$(echo "$1 > $2" | bc)"
 }
 
 yaml() {
     python -c "import yaml; print(yaml.safe_load(open('$1'))$2)"
 }
 
-dflag=''
-nflag=''
-lflag=''
-uflag=''
-bflag=''
-wflag=''
+dflag=
+nflag=
+lflag=
+uflag=
+bflag=
+wflag=
 rflag=0
 eflag=0
 mflag=0
@@ -68,37 +76,33 @@ while :; do
   esac
   shift
 done
-echo "d: ${dflag}"
-echo "n: ${nflag}"
-echo "l: ${lflag}"
-echo "u: ${uflag}"
-if (( $#bflag > 0 && $#wflag > 0 )); then
+# Check if all arguments are given and valid.
+echo "d: ${dflag:?App directory name (flag: -d) is missing.}"
+echo "n: ${nflag:?Number of traces (flag: -n) is missing.}"
+echo "l: ${lflag:?Lower bound (flag: -l) is missing.}"
+echo "u: ${uflag:?Upper bound (flag: -u) is missing.}"
+if [[ -n ${bflag} || ${wflag} ]]; then
     echo "b: ${bflag}"
     echo "w: ${wflag}"
 fi
 echo "r: ${rflag}"
-if (( $eflag > 0 && $mflag > 0 )); then
+if [[ $eflag -ne 0 || $mflag -ne 0 ]]; then
     echo "e: ${eflag}"
     echo "m: ${mflag}"
 fi
-# Check if all arguments are given and valid.
-if (( "${#dflag}" <= 0 || "${#nflag}" <= 0 || "${#lflag}" <= 0 || "${#uflag}" <= 0 )); then
-    err "App directory name (flag: -d), number of traces (flag: -n), lower bound (flag: -l), or upper bound (flag: -u) is missing."
-    exit 1
-fi
-if (( $lflag > $uflag )); then
+if (( $(float_larger ${lflag} ${uflag}) )); then
     err "Lower bound is larger than upper bound."
     exit 1
 fi
-if (( ($#bflag == 0 && $#wflag != 0) || ($#bflag != 0 && $#wflag == 0) )); then
+if [[ -z ${bflag} && -n ${wflag} || -n ${bflag} && -z ${wflag} ]]; then
     err "Either batch size (flag: -b) or pause duration (flag: -w) argument is missing."
     exit 1
 fi
-if (( $bflag <= 0 || $wflag <= 0 )); then
+if [[ -n ${bflag} && $(float_le ${bflag} 0) -eq 1 || -n ${wflag} && $(float_le ${wflag} 0) -eq 1 ]]; then
     err "Batch size (flag: -b) and pause duration (flag: -w) must be larger than 0."
     exit 1
 fi
-if (( $eflag < 0 || $mflag < 0 )); then
+if (( $(float_less ${eflag} 0) || $(float_less ${mflag} 0) )); then
     err "Anomalie flags -e and -m must be non-negative."
     exit 1
 fi
