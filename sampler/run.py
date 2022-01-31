@@ -20,12 +20,16 @@ if __name__=="__main__":
     parser.add_argument("-n", default=0, type=int, help="Number of requests")
     parser.add_argument("-l", dest="lower_bound", type=float, help="Lower bound of inter-request duration")
     parser.add_argument("-u", dest="upper_bound", type=float, help="Upper bound of inter-request duration")
-    parser.add_argument("-b", dest="batch_size", type=int, help="Size of request batch")
-    parser.add_argument("-w", dest="pause_duration", type=int, help="Pause duration after each batch")
+    parser.add_argument("-b", dest="batch_size", help="Size of request batch")
+    parser.add_argument("-w", dest="pause_duration", help="Pause duration after each batch")
     parser.add_argument("-e", dest="numb_execution_anomalies", type=int)
     parser.add_argument("-m", dest="numb_missing_function_anomalies", type=int)
     parser.add_argument("-r", dest="random_execution_duration", type=int)
     args = parser.parse_args()
+
+    if args.batch_size:
+        args.batch_size = int(args.batch_size)
+        args.pause_duration = int(args.pause_duration)
 
     req = Requester(args.d)
     traces = req.run_requests(
@@ -43,9 +47,9 @@ if __name__=="__main__":
     
     b_str = ""
     w_str = ""
-    if args.b > 0:
-        b_str = f"_b_{args.b}"
-        w_str = f"_w_{args.w}"
+    if args.batch_size:
+        b_str = f"_b_{args.batch_size}"
+        w_str = f"_w_{args.pause_duration}"
     rand_str = ""
     if args.random_execution_duration:
         rand_str = "_rand"
