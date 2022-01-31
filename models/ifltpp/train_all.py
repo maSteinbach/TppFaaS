@@ -18,7 +18,6 @@ class ResultItem:
     max_epochs: int
     patience: int
     seed: int
-    # Results for all iterations
     trained_processtime: List[float] = field(default_factory=list)
     trained_epochs: List[float] = field(default_factory=list)
     final_loss_val: List[float] = field(default_factory=list)
@@ -57,7 +56,6 @@ def train_all(
         results = []
         for cold_starts in feature_combinations(name):
             for mae_loss in [False, True]:
-                
                 # Train with different regularization settings. But keep only one.
                 items = []
                 for j, reg in enumerate(regularizations):
@@ -85,10 +83,10 @@ def train_all(
                             dataset_path=f"{directory}/{name}",
                             num_mix_components=num_mix_components,
                             coldstart_feature=cold_starts,
+                            mae_loss=mae_loss,
                             regularization=reg,
                             max_epochs=max_epochs,
                             patience=patience,
-                            mae_loss=mae_loss,
                             seed=seed
                         )
                         result_item.trained_processtime.append(iteration_result.get("trained_processtime"))
@@ -119,7 +117,6 @@ def train_all(
                     logger.info(f"Average validation loss: {result_item.loss_val_mean():.3f}")
                     items.append(result_item)
                     assert len(items) == (j+1)
-                
                 # Keep only the item with the best average validation loss value.
                 best_loss = items[0].loss_val_mean()
                 best_idx = 0

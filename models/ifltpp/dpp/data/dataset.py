@@ -30,20 +30,13 @@ def load_dataset(name: str, folder: Union[Path, str] = dataset_dir):
     path_to_file = Path(folder) / name
     dataset = torch.load(str(path_to_file))
 
-    def get_inter_time_mean(arrival_times: list):
-        inter_times = torch.Tensor([np.ediff1d(arrivals) for arrivals in arrival_times])
-        return inter_times.mean().long().item()
-
-    def get_inter_times(seq: dict, inter_time_mean: float):
+    def get_inter_times(seq: dict):
         """Get inter-event times from a sequence."""
-        return np.ediff1d(np.concatenate([[seq["arrival_times"][0] - inter_time_mean], seq["arrival_times"], [seq["t_end"]]]))
-
-    arrival_times = [seq["arrival_times"] for seq in dataset["sequences"]]
-    inter_time_mean = get_inter_time_mean(arrival_times)
+        return np.ediff1d(np.concatenate([[seq["arrival_times"][0]], seq["arrival_times"], [seq["t_end"]]]))
 
     sequences = [
         Sequence(
-            inter_times=get_inter_times(seq, inter_time_mean),
+            inter_times=get_inter_times(seq),
             marks=seq.get("marks"),
             cold_starts=(torch.Tensor(seq.get("init_times")) > 0),      # TODO: Make this optional.
             t_end=seq.get("t_end")

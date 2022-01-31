@@ -8,12 +8,12 @@ from time import process_time
 
 def train_dataset(
     dataset_path: str,
-    num_mix_components: int,
-    coldstart_feature: bool,
+    num_mix_components: int,    # Number of components for a mixture model
+    coldstart_feature: bool,    # Model feature indicating if the last invocation was a cold start
+    mae_loss: bool,             # Prediction of \tau instead of the PDF f^*(\tau) (see 'TruncNorm' in the paper)
     regularization: int,        # L2 regularization parameter
     max_epochs: int,            # For how many epochs to train
     patience: int,              # After how many consecutive epochs without improvement of val loss to stop training
-    mae_loss: bool, 
     seed: int = None
 ) -> dict:
 
@@ -22,10 +22,10 @@ def train_dataset(
         f"- dataset_path: {dataset_path}\n"
         f"- num_mix_components: {num_mix_components}\n"
         f"- coldstart_feature: {coldstart_feature}\n"
+        f"- mae_loss: {mae_loss}\n"
         f"- regularization: {regularization}\n"
         f"- max_epochs: {max_epochs}\n"
         f"- patience: {patience}\n"
-        f"- mae_loss: {mae_loss}\n"
         f"- seed: {seed}"
     )
 
@@ -37,7 +37,7 @@ def train_dataset(
     # Model config
     context_size = 64               # Size of the RNN hidden vector
     mark_embedding_size = 32        # Size of the mark embedding (used as RNN input)
-    coldstart_embedding_size = 32   # Size of the embedding of the coldstart feature (used as RNN input)
+    coldstart_embedding_size = 32   # Size of the cold start feature embedding (used as RNN input)
     rnn_type = "GRU"                # What RNN to use as an encoder {"RNN", "GRU", "LSTM"}
 
     # Training config
@@ -139,7 +139,6 @@ def train_dataset(
 
     impatient = 0
     best_loss = np.inf
-    best_mae = np.inf
     best_model = deepcopy(model.state_dict())
     start_processtime = process_time()
 
@@ -189,7 +188,7 @@ def train_dataset(
     results["trained_epochs"] = epoch + 1
     model.load_state_dict(best_model)
     model.eval()
-    # Evaluation via total loss
+    # Evaluation via total loss (= NLL_time + NLL_mark, if mae_loss=False, = MAE_time + NLL_mark, else)
     with torch.no_grad():
         final_loss_train = aggregate_loss_over_dataloader(dl_train, mae_loss)
         final_loss_val = aggregate_loss_over_dataloader(dl_val, mae_loss)
@@ -197,7 +196,10 @@ def train_dataset(
     results["final_loss_train"] = final_loss_train
     results["final_loss_val"] = final_loss_val
     results["final_loss_test"] = final_loss_test
-    logger.info(f'Total loss:\n'
+    s = "NLL_time + NLL_mark"
+    if mae_loss:
+        s = "MAE_time + NLL_mark"
+    logger.info(f'Total loss (= {s}):\n'
         f'- Train: {final_loss_train:.3f}\n'
         f'- Val:   {final_loss_val:.3f}\n'
         f'- Test:  {final_loss_test:.3f}')
@@ -209,7 +211,7 @@ def train_dataset(
     results["final_mark_nll_train"] = final_mark_nll_train
     results["final_mark_nll_val"] = final_mark_nll_val
     results["final_mark_nll_test"] = final_mark_nll_test
-    logger.info(f'Mark negative log-likelihood:\n'
+    logger.info(f'Mark negative log-likelihood (NLL_mark):\n'
         f'- Train: {final_mark_nll_train:.3f}\n'
         f'- Val:   {final_mark_nll_val:.3f}\n'
         f'- Test:  {final_mark_nll_test:.3f}')
@@ -235,7 +237,7 @@ def train_dataset(
         results["final_mae_train"] = final_mae_train
         results["final_mae_val"] = final_mae_val
         results["final_mae_test"] = final_mae_test
-        logger.info(f'Mean absolute error:\n'
+        logger.info(f'Mean absolute error (MAE):\n'
             f'- Train: {final_mae_train:.3f}\n'
             f'- Val:   {final_mae_val:.3f}\n'
             f'- Test:  {final_mae_test:.3f}')
