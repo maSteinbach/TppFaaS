@@ -1,0 +1,19 @@
+# This is an example of the definition of a function graph that specifies the application structure. An application
+# must have exactly one main function that serves as the entry point of the application and can have zero to
+# multiple f functions whose execution times are simulated by sleep commands. A main or f function can call no, a
+# single, or multiple functions in parallel after its execution is finished. All functions used in the function
+# graph must be defined in the corresponding serverless.yaml.
+#
+#      main
+#      /  \
+#    f1   f2
+#    |
+#    f3
+
+main:     # Function main calls function f1 and f2 in parallel.
+- f1
+- f2
+f1:       # After function f1 has finished its execution, it calls f3.
+- f3
+f2: None  # Function f2 calls no function.
+f3: None

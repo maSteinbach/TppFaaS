@@ -1,0 +1,39 @@
+# This is a template of a FaaS application definition.
+
+service: template # TODO: Change this to the directory name.
+
+provider:
+  name: openwhisk
+  ignore_certs: true
+
+functions:
+  # An application must have exactly one main function that serves as the entry point to the application.
+  main:
+    handler: ../funcs.main
+    parameters:
+      owHost: ${file(../config.yaml):openwhisk.host}
+      owAuth: ${file(../config.yaml):openwhisk.auth}
+      appName: ${self:service}
+      collectorHost: ${file(../config.yaml):otelcollector.host}
+      functionGraph: ${file(../graph_template.yaml)} # TODO: Define the function graph in ../graph_template.yaml.
+  
+  # An application can have zero to multiple f functions whose execution times are simulated by sleep commands.
+  f1:
+    handler: ../funcs.f
+    parameters:
+      # If the -r flag is not provided to the Sampler, 'duration' specifies the duration of the sleep command in milliseconds.
+      duration: TODO
+      # If the -r flag is provided to the Sampler, the duration of the sleep command is drawn from a gamma distribution defined
+      # by the parameters 'alpha' and 'beta'.
+      alpha: TODO 
+      beta: TODO
+  
+  # TODO: Add more f functions here ...
+
+plugins:
+  - serverless-openwhisk
+
+package:
+  include:
+    - ../funcs.js
+    - ../tracing.js
