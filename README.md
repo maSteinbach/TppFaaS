@@ -4,21 +4,15 @@ Code of the paper [TppFaaS: Modeling Serverless Functions Invocations via Tempor
 
 ## Description
 
----
-
 <img src="images/architecture.svg" alt="TppFaaS architecture" width="800">
 
 We introduce our developed system called _TppFaaS_, for modeling function invocations in FaaS applications using temporal point processes (TPPs). It is designed for applications running on the [_OpenWhisk_](https://openwhisk.apache.org/) FaaS platform, that underneath uses a Kubernetes cluster. For modeling, trace data of application functions is collected and is used for training TPP models. Based on these models, predictions are carried out. Additionally, for creating the dataset for training TPP models, we created a component within TppFaaS called _Sampler_. The Sampler is an automated pipeline for creating simulated FaaS applications by specifying configuration parameters. Here, an application is a function composition in which sleep commands simulate the execution times of the functions following a distribution. This simulated application is deployed on the OpenWhisk FaaS platform. For generating the traces, Sampler sends user requests to the deployed application (Step 1 in the figure above) executed by OpenWhisk. The [_OpenTelemetry_ library](https://opentelemetry.io/) instruments the application's functions and exports a span for each function invocation to the post-processing service [_Trace Collector_](https://github.com/maSteinbach/owtracecollector) (Step 2). The Trace Collector enriches the span with meta-information retrieved from the OpenWhisk API (Step 3) and subsequently exports it to [_Zipkin_](https://zipkin.io/) (Step 4). Here, the spans are aggregated into traces and then fetched by the Sampler, which transforms the traces into a data format suitable for the TPP models (Step 5). Once a trace dataset is generated, we split it into a training and test dataset. We use the training data to optimize the parameters of the TPP model (Steps 6-7), which we then evaluate using the test data (Step 8).
 
 ## Prerequisite: OpenWhisk
 
----
-
 OpenWhisk deployed on Kubernetes is a prerequisite. If it is not yet available, detailed instructions for deploying OpenWhisk on Kubernetes is provided [here](https://github.com/apache/openwhisk-deploy-kube).
 
 ## Deployment & Configuration
-
----
 
 Set up TppFaaS by executing the following steps:
 
@@ -28,8 +22,6 @@ Set up TppFaaS by executing the following steps:
 4. Configure the parameters in `sampler/config.yaml` which are accessed by the _Sampler_ to send requests to OpenWhisk and to fetch the traces from Zipkin.
 
 ## Generating Datasets: Sampler
-
----
 
 The Sampler is a command-line tool for generating trace datasets used to train and evaluate TPP models. It creates a dataset by sending `n` requests to the FaaS application's `main` function at irregular time intervals. The time intervals between requests are drawn from a continuous uniform distribution with an interval specified by the `lower (-l)` and `upper bound (-u)` arguments. The arguments are set by the user, who thus determines the load on OpenWisk and, indirectly, the number of cold starts. Another feature of the Sampler is performing requests in batches, pausing requesting after each batch for a user-specified duration. The `batch size` and the `pause duration` are specified with the `-b` and `-w` arguments, respectively. To simplify the trace dataset generation process, the Sampler is an end-to-end pipeline that contains all the necessary steps for data generation, such as deploying the application. The output is a dataset in `/data` consisting of n traces whose format is compatible with training a TPP model.
 
@@ -109,8 +101,6 @@ The data format is based on the format of the paper [Intensity-Free Learning of 
 
 ## Default FaaS Applications
 
----
-
 Multiple simulated FaaS applications are provided for data generation in `/apps`. All applications are implemented using the [_Serverless Framework_](https://www.serverless.com/). Sleep commands simulate the execution times of the FaaS functions. The command's duration is either fixed, e.g. 300 ms, or is drawn from a gamma distribution with a mean value of 300 ms at each invocation. The images below show the structure of the applications `sequence` ...
 
 <img src="images/app_sequence.svg" alt="application sequence" width="800">
@@ -123,12 +113,8 @@ Multiple simulated FaaS applications are provided for data generation in `/apps`
 
 ## Build your own FaaS Application
 
----
-
 The template in `apps/template` guides the creation of custom simulated FaaS applications.
 
 ## TPP Model
-
----
 
 We used the TPP model _LogNormMix_ from the [code](https://github.com/shchur/ifl-tpp) by Shchur, Biloš and Günnemann. After installing the dependencies with `pip install --file requirements.txt`, one can train and test the model interactively in `models/ifltpp/interactive.ipynb`. Also, setting `mae_loss = True` predicts the time of the next invocation as a scalar value instead of a probability distribution. In our paper, we refer to this model as _TruncNorm_.
